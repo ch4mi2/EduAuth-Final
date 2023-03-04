@@ -287,6 +287,11 @@ const ExamPage = () => {
           </div>
         ) : (
           <div></div>
+        )}{' '}
+        {percentageMarks > 80 && (
+          <div>
+            <h2>A new certificate is added to your account</h2>
+          </div>
         )}
       </div>
     </div>
