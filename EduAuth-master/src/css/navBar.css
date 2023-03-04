@@ -1,0 +1,28 @@
+/* navbar styles */
+/* navbar styles */
+.navbar {
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center; /* Center the navigation links */
+    margin: 0 auto;
+    border-bottom: 1px solid #f2f2f2;
+    background-color: #283593;
+  }
+  
+  .navbar img {
+    max-height: 80px;
+    background-color: #283593; /* Add a background color to the padding */
+  }
+  
+  .navbar a {
+    margin-left: 60px;
+    text-decoration: none;
+    padding: 6px;
+    color: white;
+  }
+  
+  .navbar a:hover {
+    color: #0CA575;
+  }
+  
