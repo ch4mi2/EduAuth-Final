@@ -13,7 +13,28 @@ const AddCourseForm = () => {
 
     const courseDetails = { name, courseMaterialUrl, category, desc };
 
-    // const response = await fetch('/api/e')
+    const response = await fetch('/api/courses', {
+      method: 'POST',
+      body: JSON.stringify(courseDetails),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    const json = await response.json();
+
+    if (!response.ok) {
+      setError(json.error);
+      setEmptyFields(json.emptyFields);
+    }
+    if (response.ok) {
+      setName('');
+      setDesc('');
+      setCourseMaterialUrl('');
+      setCategory('');
+      setError(null);
+      setEmptyFields([]);
+      console.log('new course added', json);
+    }
   };
 
   return (

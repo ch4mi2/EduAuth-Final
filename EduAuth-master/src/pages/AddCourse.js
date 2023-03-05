@@ -1,5 +1,7 @@
+import AddCourseForm from '../components/AddCourseForm';
+
 const AddCourse = () => {
-  return <div></div>;
+  return <AddCourseForm />;
 };
 
 export default AddCourse;
