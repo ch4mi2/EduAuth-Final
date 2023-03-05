@@ -1,6 +1,8 @@
 import * as faceapi from 'face-api.js';
 import { useState, useRef, useEffect } from 'react';
 import React from 'react';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 const ExamPage = () => {
   const [modelsLoaded, setModelsLoaded] = useState(false);
@@ -14,6 +16,9 @@ const ExamPage = () => {
   const [answersByUser, setAnswersByUser] = useState([]);
   const [percentageMarks, setPercentageMarks] = useState(null);
 
+  var c = 3;
+  var consecFailmSec = 0;
+  const MySwal = withReactContent(Swal);
   const videoRef = useRef();
   const videoHeight = 480 / 2;
   const videoWidth = 640 / 2;
@@ -55,51 +60,81 @@ const ExamPage = () => {
   };
 
   const handleVideoOnPlay = () => {
-    setInterval(async () => {
+    const detectFace = setInterval(async () => {
       if (canvasRef && canvasRef.current) {
-        canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(
-          videoRef.current
-        );
+        canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(videoRef.current);
         const displaySize = {
           width: videoWidth,
-          height: videoHeight,
-        };
+          height: videoHeight
+        }
 
         faceapi.matchDimensions(canvasRef.current, displaySize);
 
-        const detections = await faceapi
-          .detectAllFaces(
-            videoRef.current,
-            new faceapi.TinyFaceDetectorOptions()
-          )
-          .withFaceLandmarks()
-          .withFaceExpressions();
+        const detections = await faceapi.detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
+        .withFaceLandmarks().withFaceExpressions();
 
-        const resizedDetections = faceapi.resizeResults(
-          detections,
-          displaySize
-        );
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
 
-        canvasRef &&
-          canvasRef.current &&
-          canvasRef.current
-            .getContext('2d')
-            .clearRect(0, 0, videoWidth, videoHeight);
-        canvasRef &&
-          canvasRef.current &&
-          faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-        canvasRef &&
-          canvasRef.current &&
-          faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
-        canvasRef &&
-          canvasRef.current &&
-          faceapi.draw.drawFaceExpressions(
-            canvasRef.current,
-            resizedDetections
-          );
+        canvasRef && canvasRef.current && canvasRef.current.getContext('2d').clearRect(0, 0, videoWidth, videoHeight);
+        canvasRef && canvasRef.current && faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+        canvasRef && canvasRef.current && faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+        //canvasRef && canvasRef.current && faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
+        if( !detections.length ) {
+          consecFailmSec++;
+          if( consecFailmSec > 5 ) {
+            consecFailmSec = 0;
+            clearInterval(detectFace);
+              MySwal.fire({
+                title: 'Please Face the screen',
+                text: 'You have ' + c +' warnings remaining',
+                icon: 'warning',
+                confirmButtonText: 'Ok'
+              }).then(() => {
+                c--;
+                if( c === -1 ) {
+                  MySwal.fire({
+                    title: 'Test Failed',
+                    text: 'You have exceeded the warning limit',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                  closeWebcam();
+                })
+                } else {
+                  MySwal.fire({
+                    title: '3',
+                    text: 'Get Ready!!',
+                    icon: 'info',
+                    showConfirmButton: false,
+                    timer: 1000
+                }).then(() => {
+                  MySwal.fire({
+                    title: '2',
+                    text: 'Get Ready!!',
+                    icon: 'warning',
+                    showConfirmButton: false,
+                    timer: 1000
+                }).then(() => {
+                  MySwal.fire({
+                    title: '1',
+                    text: 'Get Ready!!',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 1000
+                }).then(() => {
+                  handleVideoOnPlay();
+                })
+                })
+                })
+                }
+              })
+          } // if of checking consecutive failed seconds 
+        } else {
+          consecFailmSec = 0;
+        }
       }
-    }, 100);
-  };
+    }, 100)
+  }
 
   const closeWebcam = () => {
     videoRef.current.pause();
@@ -281,14 +316,16 @@ const ExamPage = () => {
         </div>
       </div>
       <div className="row">
-        {percentageMarks ? (
+        {percentageMarks && c > -1 ? (
           <div>
             <h1>Your Score is {percentageMarks} %</h1>
           </div>
         ) : (
-          <div></div>
+          <div>
+            {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
+          </div>
         )}{' '}
-        {percentageMarks > 80 && (
+        {percentageMarks > 80 && c > -1 && (
           <div>
             <h2>A new certificate is added to your account</h2>
           </div>
