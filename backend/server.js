@@ -2,9 +2,9 @@ require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
-const examRoutes = require('./routes/exams');
+const courseRoutes = require('./routes/courses');
 const cProgrammingQuizRoutes = require('./routes/cProgrammingQuiz');
-const userRoutes = require('./routes/user')
+const userRoutes = require('./routes/user');
 
 //express app
 const app = express();
@@ -18,7 +18,7 @@ app.use((req, res, next) => {
 });
 
 // routes
-app.use('/api/exams/', examRoutes);
+app.use('/api/courses/', courseRoutes);
 app.use('/api/CProgrammingQuiz/', cProgrammingQuizRoutes);
 app.use('/api/user', userRoutes);
 

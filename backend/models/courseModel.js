@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-const examSchema = new Schema(
+const courseSchema = new Schema(
   {
     name: {
       type: String,
@@ -14,8 +14,11 @@ const examSchema = new Schema(
     category: {
       type: String,
     },
+    description: {
+      type: String,
+    },
   },
   { timestamps: true }
 );
 
-module.exports = mongoose.model('exam', examSchema);
+module.exports = mongoose.model('course', courseSchema);
