@@ -17,6 +17,10 @@ const courseSchema = new Schema(
     description: {
       type: String,
     },
+    imageUrl: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );
