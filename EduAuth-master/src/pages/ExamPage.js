@@ -1,20 +1,23 @@
 import * as faceapi from 'face-api.js';
 import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const ExamPage = () => {
+  const navigate = useNavigate();
+  const { examName } = useParams();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
-  const [exams, setExams] = useState('');
+  //const [course, setCourse] = useState('');
   const [dis, setDis] = useState('none');
   const [QuestionsAndAnswers, setQuestionsAndAnswers] = useState();
   const [examQuestions, setExamQuestions] = useState();
   const [examAnswers, setExamAnswers] = useState();
   const [correctAnswers, setCorrectAnswers] = useState();
   const [answersByUser, setAnswersByUser] = useState([]);
-  const [percentageMarks, setPercentageMarks] = useState(null);
+  // const [percentageMarks, setPercentageMarks] = useState();
 
   var c = 3;
   var consecFailmSec = 0;
@@ -37,15 +40,33 @@ const ExamPage = () => {
     };
     loadModels();
 
-    const fetchExams = async () => {
-      const response = await fetch('/api/exams/');
+    /* const fetchCourses = async () => {
+      const response = await fetch('/api/courses/');
       const json = await response.json();
-      setExams(json);
+      setCourse(json);
     };
-    fetchExams();
+    fetchCourses();
+*/
   }, []);
 
   const startVideo = () => {
+    const loadExam = (examName) => {
+      const fetchExamDetails = async () => {
+        const response = await fetch('/api/' + examName);
+        const json = await response.json();
+
+        setQuestionsAndAnswers(json);
+        console.log(json[0].correctAnswers);
+        console.log(json[0]);
+        setExamAnswers(json[0].answers);
+        setExamQuestions(json[0].questions);
+        setCorrectAnswers(json[0].correctAnswers);
+        setDis(true);
+      };
+
+      fetchExamDetails();
+    };
+    loadExam(examName);
     setCaptureVideo(true);
     navigator.mediaDevices
       .getUserMedia({ video: { width: 300 } })
@@ -62,79 +83,97 @@ const ExamPage = () => {
   const handleVideoOnPlay = () => {
     const detectFace = setInterval(async () => {
       if (canvasRef && canvasRef.current) {
-        canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(videoRef.current);
+        canvasRef.current.innerHTML = faceapi.createCanvasFromMedia(
+          videoRef.current
+        );
         const displaySize = {
           width: videoWidth,
-          height: videoHeight
-        }
+          height: videoHeight,
+        };
 
         faceapi.matchDimensions(canvasRef.current, displaySize);
 
-        const detections = await faceapi.detectAllFaces(videoRef.current, new faceapi.TinyFaceDetectorOptions())
-        .withFaceLandmarks().withFaceExpressions();
+        const detections = await faceapi
+          .detectAllFaces(
+            videoRef.current,
+            new faceapi.TinyFaceDetectorOptions()
+          )
+          .withFaceLandmarks()
+          .withFaceExpressions();
 
-        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        const resizedDetections = faceapi.resizeResults(
+          detections,
+          displaySize
+        );
 
-        canvasRef && canvasRef.current && canvasRef.current.getContext('2d').clearRect(0, 0, videoWidth, videoHeight);
-        canvasRef && canvasRef.current && faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
-        canvasRef && canvasRef.current && faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
+        canvasRef &&
+          canvasRef.current &&
+          canvasRef.current
+            .getContext('2d')
+            .clearRect(0, 0, videoWidth, videoHeight);
+        canvasRef &&
+          canvasRef.current &&
+          faceapi.draw.drawDetections(canvasRef.current, resizedDetections);
+        canvasRef &&
+          canvasRef.current &&
+          faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
         //canvasRef && canvasRef.current && faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
-        if( !detections.length ) {
+        if (!detections.length) {
           consecFailmSec++;
-          if( consecFailmSec > 5 ) {
+          if (consecFailmSec > 5) {
             consecFailmSec = 0;
             clearInterval(detectFace);
-              MySwal.fire({
-                title: 'Please Face the screen',
-                text: 'You have ' + c +' warnings remaining',
-                icon: 'warning',
-                confirmButtonText: 'Ok'
-              }).then(() => {
-                c--;
-                if( c === -1 ) {
-                  MySwal.fire({
-                    title: 'Test Failed',
-                    text: 'You have exceeded the warning limit',
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
+            MySwal.fire({
+              title: 'Please Face the screen',
+              text: 'You have ' + c + ' warnings remaining',
+              icon: 'warning',
+              confirmButtonText: 'Ok',
+            }).then(() => {
+              c--;
+              if (c === -1) {
+                MySwal.fire({
+                  title: 'Test Failed',
+                  text: 'You have exceeded the warning limit',
+                  icon: 'error',
+                  confirmButtonText: 'Ok',
                 }).then(() => {
                   closeWebcam();
-                })
-                } else {
-                  MySwal.fire({
-                    title: '3',
-                    text: 'Get Ready!!',
-                    icon: 'info',
-                    showConfirmButton: false,
-                    timer: 1000
+                });
+              } else {
+                MySwal.fire({
+                  title: '3',
+                  text: 'Get Ready!!',
+                  icon: 'info',
+                  showConfirmButton: false,
+                  timer: 1000,
                 }).then(() => {
                   MySwal.fire({
                     title: '2',
                     text: 'Get Ready!!',
                     icon: 'warning',
                     showConfirmButton: false,
-                    timer: 1000
-                }).then(() => {
-                  MySwal.fire({
-                    title: '1',
-                    text: 'Get Ready!!',
-                    icon: 'success',
-                    showConfirmButton: false,
-                    timer: 1000
-                }).then(() => {
-                  handleVideoOnPlay();
-                })
-                })
-                })
-                }
-              })
-          } // if of checking consecutive failed seconds 
+                    timer: 1000,
+                  }).then(() => {
+                    MySwal.fire({
+                      title: '1',
+                      text: 'Get Ready!!',
+                      icon: 'success',
+                      showConfirmButton: false,
+                      timer: 1000,
+                    }).then(() => {
+                      handleVideoOnPlay();
+                    });
+                  });
+                });
+              }
+            });
+          } // if of checking consecutive failed seconds
         } else {
           consecFailmSec = 0;
         }
       }
-    }, 100)
-  }
+    }, 100);
+  };
 
   const closeWebcam = () => {
     videoRef.current.pause();
@@ -142,38 +181,23 @@ const ExamPage = () => {
     setCaptureVideo(false);
   };
 
-  const loadExam = (examName) => {
-    const fetchExamDetails = async () => {
-      const response = await fetch('/api/' + examName);
-      const json = await response.json();
-
-      setQuestionsAndAnswers(json);
-      console.log(json[0].correctAnswers);
-      console.log(json[0]);
-      setExamAnswers(json[0].answers);
-      setExamQuestions(json[0].questions);
-      setCorrectAnswers(json[0].correctAnswers);
-      setDis(true);
-    };
-
-    fetchExamDetails();
-  };
-
   let correctCount = 0;
   const submitExam = (e) => {
     e.preventDefault();
 
     answersByUser.forEach((item) => {
-      //console.log('item' + item);
-      //console.log(correctAnswers);
       correctAnswers.forEach((correct) => {
-        //console.log('correct' + correct);
         if (correct[0] === item[0] && correct[1] === item[1]) {
           correctCount++;
         }
       });
     });
-    setPercentageMarks((correctCount / examQuestions.length) * 100);
+
+    const percentageMarks = (correctCount / examQuestions.length) * 100;
+    console.log(percentageMarks);
+    navigate(`results`, {
+      state: { marks: percentageMarks },
+    });
   };
 
   return (
@@ -249,14 +273,14 @@ const ExamPage = () => {
             </div>
           </div>
           <div className="row">
-            {captureVideo && !QuestionsAndAnswers ? (
+            {/*captureVideo && !QuestionsAndAnswers ? (
               <div>
                 <h1>Available Exams</h1>
-                {exams &&
-                  exams.map((exam) => (
-                    <div key={exam._id}>
-                      <h3>{exam.name}</h3>
-                      <button onClick={() => loadExam(exam.name)}>
+                {course &&
+                  course.map((course) => (
+                    <div key={course._id}>
+                      <h3>{course.name}</h3>
+                      <button onClick={() => loadExam(course.name)}>
                         Exam Link
                       </button>
                     </div>
@@ -264,7 +288,7 @@ const ExamPage = () => {
               </div>
             ) : (
               <div></div>
-            )}
+            )*/}
           </div>
         </div>
 
@@ -314,22 +338,6 @@ const ExamPage = () => {
             <button type="submit">Submit</button>
           </form>
         </div>
-      </div>
-      <div className="row">
-        {percentageMarks && c > -1 ? (
-          <div>
-            <h1>Your Score is {percentageMarks} %</h1>
-          </div>
-        ) : (
-          <div>
-            {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
-          </div>
-        )}{' '}
-        {percentageMarks > 80 && c > -1 && (
-          <div>
-            <h2>A new certificate is added to your account</h2>
-          </div>
-        )}
       </div>
     </div>
   );
