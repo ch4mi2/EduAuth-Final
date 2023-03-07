@@ -6,7 +6,7 @@ const Profile = () => {
     return (
       <div className="profile">
         <div>
-        <h1>Welcome back {user.email}</h1>
+        <h2 style={{marginLeft:20, marginTop:20}}>Welcome back {user.email}</h2>
         </div>
         <div class="card">
             <h2>Badges</h2>
