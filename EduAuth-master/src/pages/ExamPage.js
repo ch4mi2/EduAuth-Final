@@ -1,20 +1,23 @@
 import * as faceapi from 'face-api.js';
 import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 
 const ExamPage = () => {
+  const navigate = useNavigate();
+  const { examName } = useParams();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
-  const [course, setCourse] = useState('');
+  //const [course, setCourse] = useState('');
   const [dis, setDis] = useState('none');
   const [QuestionsAndAnswers, setQuestionsAndAnswers] = useState();
   const [examQuestions, setExamQuestions] = useState();
   const [examAnswers, setExamAnswers] = useState();
   const [correctAnswers, setCorrectAnswers] = useState();
   const [answersByUser, setAnswersByUser] = useState([]);
-  const [percentageMarks, setPercentageMarks] = useState(null);
+  // const [percentageMarks, setPercentageMarks] = useState();
 
   var c = 3;
   var consecFailmSec = 0;
@@ -37,15 +40,33 @@ const ExamPage = () => {
     };
     loadModels();
 
-    const fetchCourses = async () => {
+    /* const fetchCourses = async () => {
       const response = await fetch('/api/courses/');
       const json = await response.json();
       setCourse(json);
     };
     fetchCourses();
+*/
   }, []);
 
   const startVideo = () => {
+    const loadExam = (examName) => {
+      const fetchExamDetails = async () => {
+        const response = await fetch('/api/' + examName);
+        const json = await response.json();
+
+        setQuestionsAndAnswers(json);
+        console.log(json[0].correctAnswers);
+        console.log(json[0]);
+        setExamAnswers(json[0].answers);
+        setExamQuestions(json[0].questions);
+        setCorrectAnswers(json[0].correctAnswers);
+        setDis(true);
+      };
+
+      fetchExamDetails();
+    };
+    loadExam(examName);
     setCaptureVideo(true);
     navigator.mediaDevices
       .getUserMedia({ video: { width: 300 } })
@@ -160,38 +181,23 @@ const ExamPage = () => {
     setCaptureVideo(false);
   };
 
-  const loadExam = (examName) => {
-    const fetchExamDetails = async () => {
-      const response = await fetch('/api/' + examName);
-      const json = await response.json();
-
-      setQuestionsAndAnswers(json);
-      console.log(json[0].correctAnswers);
-      console.log(json[0]);
-      setExamAnswers(json[0].answers);
-      setExamQuestions(json[0].questions);
-      setCorrectAnswers(json[0].correctAnswers);
-      setDis(true);
-    };
-
-    fetchExamDetails();
-  };
-
   let correctCount = 0;
   const submitExam = (e) => {
     e.preventDefault();
 
     answersByUser.forEach((item) => {
-      //console.log('item' + item);
-      //console.log(correctAnswers);
       correctAnswers.forEach((correct) => {
-        //console.log('correct' + correct);
         if (correct[0] === item[0] && correct[1] === item[1]) {
           correctCount++;
         }
       });
     });
-    setPercentageMarks((correctCount / examQuestions.length) * 100);
+
+    const percentageMarks = (correctCount / examQuestions.length) * 100;
+    console.log(percentageMarks);
+    navigate(`results`, {
+      state: { marks: percentageMarks },
+    });
   };
 
   return (
@@ -267,7 +273,7 @@ const ExamPage = () => {
             </div>
           </div>
           <div className="row">
-            {captureVideo && !QuestionsAndAnswers ? (
+            {/*captureVideo && !QuestionsAndAnswers ? (
               <div>
                 <h1>Available Exams</h1>
                 {course &&
@@ -282,7 +288,7 @@ const ExamPage = () => {
               </div>
             ) : (
               <div></div>
-            )}
+            )*/}
           </div>
         </div>
 
@@ -332,22 +338,6 @@ const ExamPage = () => {
             <button type="submit">Submit</button>
           </form>
         </div>
-      </div>
-      <div className="row">
-        {percentageMarks && c > -1 ? (
-          <div>
-            <h1>Your Score is {percentageMarks} %</h1>
-          </div>
-        ) : (
-          <div>
-            {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
-          </div>
-        )}{' '}
-        {percentageMarks > 80 && c > -1 && (
-          <div>
-            <h2>A new certificate is added to your account</h2>
-          </div>
-        )}
       </div>
     </div>
   );

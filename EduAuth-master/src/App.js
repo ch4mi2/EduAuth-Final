@@ -9,13 +9,14 @@ import Donations from './pages/Donations';
 import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import AddCourse from './pages/AddCourse';
+import ExamResults from './pages/ExamResults.js';
 
 function App() {
   const { user } = useAuthContext();
 
   return (
-    <div className="App">
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="App">
         <Navbar />
         <div className="pages">
           <Routes>
@@ -31,12 +32,16 @@ function App() {
             />
             <Route path="/donations" element={<Donations />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/examPage" element={<ExamPage />} />
+            <Route path="/examPage/:examName" element={<ExamPage />} />
+            <Route
+              path="/examPage/:examName/results"
+              element={<ExamResults />}
+            />
             <Route path="/addCourse" element={<AddCourse />} />
           </Routes>
         </div>
-      </BrowserRouter>
-    </div>
+      </div>
+    </BrowserRouter>
   );
 }
 
