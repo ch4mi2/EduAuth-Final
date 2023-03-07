@@ -32,6 +32,13 @@ const Navbar = () => {
               borderRadius: '8px' 
             }}>Login</Link>
           )}
+          {!user &&(
+            <Link to="/signup" style={{ 
+              color: 'white', 
+              backgroundColor: '#0CA575',
+              borderRadius: '8px' 
+            }}>Register</Link>
+          )}
         </div>
           {user &&(
           <div>
