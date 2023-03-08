@@ -11,6 +11,7 @@ const ExamPage = () => {
   const {user} = useAuthContext()
   const { examName } = useParams();
   const [img, setImg] = React.useState();
+  const [faceMatcher,setFaceMatcher] = React.useState();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
   //const [course, setCourse] = useState('');
@@ -40,7 +41,7 @@ const ExamPage = () => {
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-      ]).then(setModelsLoaded(true));
+      ]).then(fetchImage).then(setFace).then(setModelsLoaded(true));
     };
     const fetchImage = async () => {
       const res = await fetch(imageUrl);
@@ -48,8 +49,16 @@ const ExamPage = () => {
       const imageObjectURL = URL.createObjectURL(imageBlob);
       setImg(imageObjectURL);
     };
+    const setFace = async() => {
+      const results = await faceapi.detectAllFaces(document.getElementById("FaceImg")).withFaceLandmarks()
+          .withFaceDescriptors()
+      console.log(results);
+      if(!results.length) {
+        return;
+      }
+      setFaceMatcher(new faceapi.FaceMatcher(results));
+    };
     loadModels();
-    fetchImage();
     /* const fetchCourses = async () => {
       const response = await fetch('/api/courses/');
       const json = await response.json();
@@ -120,6 +129,10 @@ const ExamPage = () => {
           .withFaceLandmarks()
           .withFaceExpressions();
 
+        const singleResult = await faceapi.detectSingleFace(videoRef.current).withFaceLandmarks().withFaceDescriptor()
+
+        const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor);
+        // console.log(bestMatch.toString());
         const resizedDetections = faceapi.resizeResults(
           detections,
           displaySize
@@ -136,7 +149,6 @@ const ExamPage = () => {
         canvasRef &&
           canvasRef.current &&
           faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
-        //canvasRef && canvasRef.current && faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
         if (!detections.length) {
           consecFailmSec++;
           if (consecFailmSec > 5) {
@@ -147,7 +159,7 @@ const ExamPage = () => {
               text: 'You have ' + c + ' warnings remaining',
               icon: 'warning',
               showConfirmButton: false,
-              timer: 1000,
+              timer: 2000,
             }).then(() => {
               c--;
               if (c === -1) {
@@ -190,16 +202,16 @@ const ExamPage = () => {
           } // if of checking consecutive failed seconds
         } else {
           consecFailmSec = 0;
-          // if( !(bestMatch.toString().substring(0,8) === 'person 1') ) {
-          //   MySwal.fire({
-          //     title: 'Not the person registered..',
-          //     text: 'The test cannot be continued',
-          //     icon: 'warning',
-          //     confirmButtonText: 'Ok'
-          //   }).then(() => {
-          //     closeWebcam();
-          //   })
-          // }
+          if( !(bestMatch.toString().substring(0,8) === 'person 1') ) {
+            MySwal.fire({
+              title: 'Not the person registered..',
+              text: 'The test cannot be continued',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then(() => {
+              closeWebcam();
+            })
+          }
         }
       }
     }, 100);
@@ -236,6 +248,7 @@ const ExamPage = () => {
         <div className="col-3">
           <div className="row">
             <div className="col-12">
+            <img src = { img } hidden alt='Used Face' id='FaceImg'/>
               {!QuestionsAndAnswers && (
                 <div style={{ textAlign: 'center', padding: '10px' }}>
                   {captureVideo && modelsLoaded ? (
