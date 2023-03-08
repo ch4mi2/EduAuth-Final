@@ -4,10 +4,13 @@ import { useParams, useNavigate } from 'react-router-dom';
 import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const ExamPage = () => {
   const navigate = useNavigate();
+  const {user} = useAuthContext()
   const { examName } = useParams();
+  const [img, setImg] = React.useState();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
   //const [course, setCourse] = useState('');
@@ -21,6 +24,7 @@ const ExamPage = () => {
 
   var c = 3;
   var consecFailmSec = 0;
+  const imageUrl = user.faceImageUrl;
   const MySwal = withReactContent(Swal);
   const videoRef = useRef();
   const videoHeight = 480 / 2;
@@ -38,8 +42,14 @@ const ExamPage = () => {
         faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
       ]).then(setModelsLoaded(true));
     };
+    const fetchImage = async () => {
+      const res = await fetch(imageUrl);
+      const imageBlob = await res.blob();
+      const imageObjectURL = URL.createObjectURL(imageBlob);
+      setImg(imageObjectURL);
+    };
     loadModels();
-
+    fetchImage();
     /* const fetchCourses = async () => {
       const response = await fetch('/api/courses/');
       const json = await response.json();
@@ -48,6 +58,15 @@ const ExamPage = () => {
     fetchCourses();
 */
   }, []);
+
+  // async function setFace() {
+  //   const results = await faceapi.detectAllFaces(img).withFaceLandmarks()
+  //       .withFaceDescriptors()
+  //   if(!results.length) {
+  //           return;
+  //   }
+  //   const faceMatcher = new faceapi.FaceMatcher(results);
+  // }
 
   const startVideo = () => {
     const loadExam = (examName) => {
@@ -127,7 +146,8 @@ const ExamPage = () => {
               title: 'Please Face the screen',
               text: 'You have ' + c + ' warnings remaining',
               icon: 'warning',
-              confirmButtonText: 'Ok',
+              showConfirmButton: false,
+              timer: 1000,
             }).then(() => {
               c--;
               if (c === -1) {
@@ -170,6 +190,16 @@ const ExamPage = () => {
           } // if of checking consecutive failed seconds
         } else {
           consecFailmSec = 0;
+          // if( !(bestMatch.toString().substring(0,8) === 'person 1') ) {
+          //   MySwal.fire({
+          //     title: 'Not the person registered..',
+          //     text: 'The test cannot be continued',
+          //     icon: 'warning',
+          //     confirmButtonText: 'Ok'
+          //   }).then(() => {
+          //     closeWebcam();
+          //   })
+          // }
         }
       }
     }, 100);
