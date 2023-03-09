@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+.search{
+    margin: 25px 200px 10px ;
+    width: 800px;
+    border: 3px solid #c6c6c6;
+    border-right: none;
+    padding: 5px;
+    height: 20px;
+    border-radius: 60px;
+    outline: none;
+    background-color: #c6c6c6;
+    color: black;
+    padding: 10px;
+    align-items: center;
+}
+
+.main{
+    display: flex;
+    height: 800px;
+    margin: 0px 50px 10px 150px;
+}
+
+.searchItem{
+  width: 600px;
+  margin-top: 40px;
+  margin-bottom: 10px;
+  border-radius:15px;
+  border: 1px solid #c6c6c6;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px;
+  display : flex;
+  background-color: #c6c6c6;
+}
+
+.siImg{
+  width: 200px;
+  height: 200px;
+  object-fit:cover;
+}
+
+.siDesc{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 2;
+}
+
+.siTitle{
+  font-size: 20px;
+  color:#0071c2; 
+}
+
+.siDetails{
+  font-size: 15px;
+}
+
+.sipoints{
+  font-size: 13px; 
+}
+
+#sibtn{
+  background-color: green;
+  color: white;
+  font-weight: bold;
+  padding: 10px 20px ;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  margin : 10px;
+}
+
+.sidebar{
+    margin: 40px 10px 40px 10px;
+    width: 220px;
+    flex-shrink: 0;
+    background-color: #c6c6c6;
+    height: 90%;
+    overflow: auto;
+    padding: 8px;
+}
+
+.sidebar-item{
+    padding: .75em 1em;
+    display: block;
+    transition: background-color .15s;
+    border-radius: 5px;
+  }
+  .sidebar-item:hover{
+    background-color: rgba(255, 255, 255, .1);
+  }
+  
+  .sidebar-title{
+    display: flex;
+    font-size: 14px;
+    justify-content: space-between;
+  }
+  .sidebar-title span i{
+    display: inline-block;
+    width: 1.5em;
+  }
+  .sidebar-title .toggle-btn{
+    cursor: pointer;
+    transition: transform .3s;
+  }
+  .sidebar-item.open > .sidebar-title .toggle-btn{
+    transform: rotate(180deg);
+  }
+  .sidebar-content{
+    padding-top: .25em;
+    height: 0;
+    overflow: hidden;
+    font-size: 13px;
+  }
+  .sidebar-item.open > .sidebar-content{
+    height: auto;
+  }
+  
+  .sidebar-item.plain{
+    color: #000;
+    text-decoration: none;
+  }
+  .sidebar-item.plain:hover{
+    text-decoration: underline;
+  }
+  .sidebar-item.plain i{
+    display: inline-block;
+    width: 1.7em;
+  }
