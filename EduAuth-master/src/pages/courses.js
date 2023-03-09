@@ -11,7 +11,7 @@ const Courses = () => {
 
    useEffect(() => {
         const fetchCourses = async() => {
-            const response = await fetch('/api/courses')
+            const response = await fetch('/api/courses/')
             const json = await response.json()
 
             if(response.ok){

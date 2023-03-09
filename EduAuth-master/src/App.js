@@ -10,6 +10,7 @@ import Profile from './pages/Profile';
 import Navbar from './components/Navbar';
 import AddCourse from './pages/AddCourse';
 import ExamResults from './pages/ExamResults.js';
+import Courses from './pages/courses';
 
 function App() {
   const { user } = useAuthContext();
@@ -37,6 +38,7 @@ function App() {
               path="/examPage/:examName/results"
               element={<ExamResults />}
             />
+            <Route path='/courses' element={<Courses/>}/>
             <Route path="/addCourse" element={<AddCourse />} />
           </Routes>
         </div>
