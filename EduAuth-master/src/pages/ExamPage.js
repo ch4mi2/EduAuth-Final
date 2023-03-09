@@ -1,23 +1,31 @@
 import * as faceapi from 'face-api.js';
 import { useState, useRef, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import React from 'react';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 const ExamPage = () => {
+  const navigate = useNavigate();
+  const {user} = useAuthContext()
+  const { examName } = useParams();
+  const [img, setImg] = React.useState();
+  const [faceMatcher,setFaceMatcher] = React.useState();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
-  const [course, setCourse] = useState('');
+  //const [course, setCourse] = useState('');
   const [dis, setDis] = useState('none');
   const [QuestionsAndAnswers, setQuestionsAndAnswers] = useState();
   const [examQuestions, setExamQuestions] = useState();
   const [examAnswers, setExamAnswers] = useState();
   const [correctAnswers, setCorrectAnswers] = useState();
   const [answersByUser, setAnswersByUser] = useState([]);
-  const [percentageMarks, setPercentageMarks] = useState(null);
+  // const [percentageMarks, setPercentageMarks] = useState();
 
   var c = 3;
   var consecFailmSec = 0;
+  const imageUrl = user.faceImageUrl;
   const MySwal = withReactContent(Swal);
   const videoRef = useRef();
   const videoHeight = 480 / 2;
@@ -33,19 +41,60 @@ const ExamPage = () => {
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
-      ]).then(setModelsLoaded(true));
+      ]).then(fetchImage).then(setFace).then(setModelsLoaded(true));
+    };
+    const fetchImage = async () => {
+      const res = await fetch(imageUrl);
+      const imageBlob = await res.blob();
+      const imageObjectURL = URL.createObjectURL(imageBlob);
+      setImg(imageObjectURL);
+    };
+    const setFace = async() => {
+      const results = await faceapi.detectAllFaces(document.getElementById("FaceImg")).withFaceLandmarks()
+          .withFaceDescriptors()
+      console.log(results);
+      if(!results.length) {
+        return;
+      }
+      setFaceMatcher(new faceapi.FaceMatcher(results));
     };
     loadModels();
-
-    const fetchCourses = async () => {
+    /* const fetchCourses = async () => {
       const response = await fetch('/api/courses/');
       const json = await response.json();
       setCourse(json);
     };
     fetchCourses();
+*/
   }, []);
 
+  // async function setFace() {
+  //   const results = await faceapi.detectAllFaces(img).withFaceLandmarks()
+  //       .withFaceDescriptors()
+  //   if(!results.length) {
+  //           return;
+  //   }
+  //   const faceMatcher = new faceapi.FaceMatcher(results);
+  // }
+
   const startVideo = () => {
+    const loadExam = (examName) => {
+      const fetchExamDetails = async () => {
+        const response = await fetch('/api/' + examName);
+        const json = await response.json();
+
+        setQuestionsAndAnswers(json);
+        console.log(json[0].correctAnswers);
+        console.log(json[0]);
+        setExamAnswers(json[0].answers);
+        setExamQuestions(json[0].questions);
+        setCorrectAnswers(json[0].correctAnswers);
+        setDis(true);
+      };
+
+      fetchExamDetails();
+    };
+    loadExam(examName);
     setCaptureVideo(true);
     navigator.mediaDevices
       .getUserMedia({ video: { width: 300 } })
@@ -80,6 +129,10 @@ const ExamPage = () => {
           .withFaceLandmarks()
           .withFaceExpressions();
 
+        const singleResult = await faceapi.detectSingleFace(videoRef.current).withFaceLandmarks().withFaceDescriptor()
+
+        const bestMatch = faceMatcher.findBestMatch(singleResult.descriptor);
+        // console.log(bestMatch.toString());
         const resizedDetections = faceapi.resizeResults(
           detections,
           displaySize
@@ -96,7 +149,6 @@ const ExamPage = () => {
         canvasRef &&
           canvasRef.current &&
           faceapi.draw.drawFaceLandmarks(canvasRef.current, resizedDetections);
-        //canvasRef && canvasRef.current && faceapi.draw.drawFaceExpressions(canvasRef.current, resizedDetections);
         if (!detections.length) {
           consecFailmSec++;
           if (consecFailmSec > 5) {
@@ -106,7 +158,8 @@ const ExamPage = () => {
               title: 'Please Face the screen',
               text: 'You have ' + c + ' warnings remaining',
               icon: 'warning',
-              confirmButtonText: 'Ok',
+              showConfirmButton: false,
+              timer: 2000,
             }).then(() => {
               c--;
               if (c === -1) {
@@ -149,6 +202,16 @@ const ExamPage = () => {
           } // if of checking consecutive failed seconds
         } else {
           consecFailmSec = 0;
+          if( !(bestMatch.toString().substring(0,8) === 'person 1') ) {
+            MySwal.fire({
+              title: 'Not the person registered..',
+              text: 'The test cannot be continued',
+              icon: 'warning',
+              confirmButtonText: 'Ok'
+            }).then(() => {
+              closeWebcam();
+            })
+          }
         }
       }
     }, 100);
@@ -160,38 +223,23 @@ const ExamPage = () => {
     setCaptureVideo(false);
   };
 
-  const loadExam = (examName) => {
-    const fetchExamDetails = async () => {
-      const response = await fetch('/api/' + examName);
-      const json = await response.json();
-
-      setQuestionsAndAnswers(json);
-      console.log(json[0].correctAnswers);
-      console.log(json[0]);
-      setExamAnswers(json[0].answers);
-      setExamQuestions(json[0].questions);
-      setCorrectAnswers(json[0].correctAnswers);
-      setDis(true);
-    };
-
-    fetchExamDetails();
-  };
-
   let correctCount = 0;
   const submitExam = (e) => {
     e.preventDefault();
 
     answersByUser.forEach((item) => {
-      //console.log('item' + item);
-      //console.log(correctAnswers);
       correctAnswers.forEach((correct) => {
-        //console.log('correct' + correct);
         if (correct[0] === item[0] && correct[1] === item[1]) {
           correctCount++;
         }
       });
     });
-    setPercentageMarks((correctCount / examQuestions.length) * 100);
+
+    const percentageMarks = (correctCount / examQuestions.length) * 100;
+    console.log(percentageMarks);
+    navigate(`results`, {
+      state: { marks: percentageMarks },
+    });
   };
 
   return (
@@ -200,6 +248,7 @@ const ExamPage = () => {
         <div className="col-3">
           <div className="row">
             <div className="col-12">
+            <img src = { img } hidden alt='Used Face' id='FaceImg'/>
               {!QuestionsAndAnswers && (
                 <div style={{ textAlign: 'center', padding: '10px' }}>
                   {captureVideo && modelsLoaded ? (
@@ -267,7 +316,7 @@ const ExamPage = () => {
             </div>
           </div>
           <div className="row">
-            {captureVideo && !QuestionsAndAnswers ? (
+            {/*captureVideo && !QuestionsAndAnswers ? (
               <div>
                 <h1>Available Exams</h1>
                 {course &&
@@ -282,7 +331,7 @@ const ExamPage = () => {
               </div>
             ) : (
               <div></div>
-            )}
+            )*/}
           </div>
         </div>
 
@@ -332,22 +381,6 @@ const ExamPage = () => {
             <button type="submit">Submit</button>
           </form>
         </div>
-      </div>
-      <div className="row">
-        {percentageMarks && c > -1 ? (
-          <div>
-            <h1>Your Score is {percentageMarks} %</h1>
-          </div>
-        ) : (
-          <div>
-            {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
-          </div>
-        )}{' '}
-        {percentageMarks > 80 && c > -1 && (
-          <div>
-            <h2>A new certificate is added to your account</h2>
-          </div>
-        )}
       </div>
     </div>
   );

@@ -75,3 +75,7 @@ form.login button {
   cursor: pointer;
 }
 
+form.signup button{
+  margin-top: 10px;
+}
+
