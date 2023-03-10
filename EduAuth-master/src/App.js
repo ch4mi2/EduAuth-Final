@@ -38,7 +38,7 @@ function App() {
               path="/examPage/:examName/results"
               element={<ExamResults />}
             />
-            <Route path='/courses' element={<Courses/>}/>
+            <Route path="/courses" element={<Courses />} />
             <Route path="/addCourse" element={<AddCourse />} />
           </Routes>
         </div>
