@@ -1,0 +1,73 @@
+[
+    {
+        "title": "Mathematics",
+        "childrens": [
+            {
+                "title": "Pure Mathematics"
+            },
+            {
+                "title": "Applied Mathematics"
+            },
+            {
+                "title": "Probability & Statistics",
+                "childrens": [
+                    {
+                        "title": "Probability"
+                    },
+                    {
+                        "title": "Statistics"
+                    }
+                ]
+            },
+            {
+                "title": "Geometry"
+            }
+        ]
+    },
+    {
+        "title": "Science",
+        "childrens": [
+            {
+                "title": "Chemistry"
+            },
+            {
+                "title": "Biology"
+            },
+            {
+                "title": "Physics"
+            },
+            {
+                "title": "Botany"
+            }
+        ]
+    },
+    {
+        "title": "Computer Science",
+        "childrens": [
+            {
+                "title": "Cyber Security"
+            },
+            {
+                "title": "Software Eng."
+            },
+            {
+                "title": "AI/ML"
+            },
+            {
+                "title": "IOT"
+            }
+        ]
+    },
+    {
+        "title": "Commerce",
+        "childrens": [
+            {
+                "title": "Economics"
+
+            },
+            {
+                "title": "Business Studies"
+            }
+        ]
+    }
+] 
