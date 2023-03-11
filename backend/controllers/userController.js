@@ -14,14 +14,10 @@ const loginUser = async (req, res) => {
 
     // create a token
     const token = createToken(user._id)
-
-    const faceUrl = user.faceImageUrl;
     const userID = user._id;
-    
-
     const faceImageUrl = user.faceImageUrl;
 
-    res.status(200).json({email, token,faceUrl, userID, faceImageUrl})
+    res.status(200).json({email, token,userID, faceImageUrl})
   } catch (error) {
     res.status(400).json({error: error.message})
   }
