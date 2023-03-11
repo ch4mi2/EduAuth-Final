@@ -33,9 +33,9 @@ function App() {
             />
             <Route path="/donations" element={<Donations />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/examPage/:examName" element={<ExamPage />} />
+            <Route path="/courses/:examName" element={<ExamPage />} />
             <Route
-              path="/examPage/:examName/results"
+              path="/courses/:examName/results"
               element={<ExamResults />}
             />
             <Route path="/courses" element={<Courses />} />
