@@ -27,7 +27,7 @@ const getCourse = async (req, res) => {
 
 // create new course
 const createCourse = async (req, res) => {
-  const { name, originalUrl, category, description, imageUrl } = req.body;
+  const { name, quiz, originalUrl, category, description, imageUrl } = req.body;
 
   let emptyFields = [];
 
@@ -44,6 +44,7 @@ const createCourse = async (req, res) => {
   try {
     const course = await Course.create({
       name,
+      quiz,
       originalUrl,
       category,
       description,
