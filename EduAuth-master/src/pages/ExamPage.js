@@ -8,9 +8,10 @@ import { useAuthContext } from '../hooks/useAuthContext';
 
 const ExamPage = () => {
   const navigate = useNavigate();
-  const {user} = useAuthContext()
+  const {user} = useAuthContext();
   const { examName } = useParams();
   const [img, setImg] = React.useState();
+  // const [imageUrl,setImagUrl] = React.useState();
   const [faceMatcher,setFaceMatcher] = React.useState();
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [captureVideo, setCaptureVideo] = useState(false);
@@ -25,25 +26,26 @@ const ExamPage = () => {
 
   var c = 3;
   var consecFailmSec = 0;
-  const imageUrl = user.faceImageUrl;
   const MySwal = withReactContent(Swal);
   const videoRef = useRef();
   const videoHeight = 480 / 2;
   const videoWidth = 640 / 2;
   const canvasRef = useRef();
+  const imageUrl = "https://firebasestorage.googleapis.com/v0/b/eduauth-72983.appspot.com/o/face%2F1678524353548_undefined?alt=media&token=dcc7ea20-3a41-4e12-829a-065a29502edb";
 
   useEffect(() => {
     const loadModels = async () => {
-      const MODEL_URL = process.env.PUBLIC_URL + '/models';
+      const MODEL_URL = process.env.PUBLIC_URL + '/models';     
 
       Promise.all([
         faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
         faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
+        faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL)
       ]).then(fetchImage).then(setFace).then(setModelsLoaded(true));
     };
-    const fetchImage = async () => {
+    const fetchImage = async () => { 
       const res = await fetch(imageUrl);
       const imageBlob = await res.blob();
       const imageObjectURL = URL.createObjectURL(imageBlob);
@@ -203,6 +205,7 @@ const ExamPage = () => {
         } else {
           consecFailmSec = 0;
           if( !(bestMatch.toString().substring(0,8) === 'person 1') ) {
+            clearInterval(detectFace);
             MySwal.fire({
               title: 'Not the person registered..',
               text: 'The test cannot be continued',
@@ -221,6 +224,7 @@ const ExamPage = () => {
     videoRef.current.pause();
     videoRef.current.srcObject.getTracks()[0].stop();
     setCaptureVideo(false);
+    navigate("/");
   };
 
   let correctCount = 0;
