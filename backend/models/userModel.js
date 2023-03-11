@@ -21,6 +21,10 @@ const userSchema = new Schema({
   faceImageUrl: {
     type: String,
     default: null
+  },
+  certificates: {
+    type: [String],
+    default: []
   }
 })
 
@@ -71,5 +75,7 @@ userSchema.statics.login = async function(email, password) {
 
   return user
 }
+
+
 
 module.exports = mongoose.model('User', userSchema)

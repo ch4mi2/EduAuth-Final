@@ -1,13 +1,40 @@
+import { useState, useEffect } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
+import { useAuthContext } from '../hooks/useAuthContext';
 
 function ExamResults() {
   const { examName } = useParams();
   const location = useLocation();
   const percentageMarks = location.state.marks;
+  const { user } = useAuthContext();
+  const userID = user.userID;
+  const url = window.location.pathname;
+  const url2 = url.substring(url.indexOf('/examPage/') + '/examPage/'.length);
+  const exam = url2.replace('/results', '');
 
-  if (percentageMarks > 80) {
-    // get user details and append courseName/badgeurl to certificates attribute
-  }
+  
+
+  const [certificateAdded, setCertificateAdded] = useState(false);
+
+  useEffect(() => {
+    async function addCertificate() {
+      if (percentageMarks > 80) {
+        try {
+          const response = await fetch(`/api/user/${userID}/certificates`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userID, exam }),
+          });
+          const json = await response.json();
+          console.log(json);
+          setCertificateAdded(true);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+    addCertificate();
+  }, [userID, examName, percentageMarks]);
 
   return (
     <div className="container">
@@ -25,7 +52,7 @@ function ExamResults() {
               {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
             </div>
           )}{' '}
-          {percentageMarks > 80 ? (
+          {certificateAdded ? (
             <div>
               <h2>A new certificate is added to your account</h2>
             </div>
@@ -39,3 +66,5 @@ function ExamResults() {
 }
 
 export default ExamResults;
+
+

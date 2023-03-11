@@ -15,7 +15,11 @@ const loginUser = async (req, res) => {
     // create a token
     const token = createToken(user._id)
 
-    res.status(200).json({email, token})
+    const faceUrl = user.faceImageUrl;
+    const userID = user._id;
+    
+
+    res.status(200).json({email, token,faceUrl, userID})
   } catch (error) {
     res.status(400).json({error: error.message})
   }
@@ -29,15 +33,49 @@ const signupUser = async (req, res) => {
     const user = await User.signup(email, password, nicImageUrl, faceImageUrl)
 
     // create a token
-    const token = createToken(user._id)
+    const userID = user._id;
+    const token = createToken(userID)
 
-    res.status(201).json({email, token})
+
+    res.status(201).json({email, token, faceImageUrl, userID})
   } catch (error) {
     res.status(400).json({error: error.message})
   }
 }
 
+// Add certificates to a user
+const addCertificates = async (req, res) => {
+  const { userId } = req.params;
+  const { exam } = req.body;
+
+  try {
+    const user = await User.findByIdAndUpdate(userId, {
+      $addToSet: { certificates: exam }
+    }, { new: true });
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to add certificates' });
+  }
+};
+
+//get certificates
+const getCertificates = async (req, res) => {
+  const { userId } = req.params;
+  const user = await User.findById(userId);
+
+  if (!user) {
+    return res.status(404).json({ error: 'No such user' });
+  }
+
+  const certificates = user.certificates || []; // Make sure certificates is an array
+
+  res.status(200).json(certificates);
+};
+
 module.exports = {
   loginUser,
-  signupUser
+  signupUser,
+  addCertificates,
+  getCertificates
 }
