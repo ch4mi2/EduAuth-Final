@@ -12,8 +12,6 @@ function ExamResults() {
   const url2 = url.substring(url.indexOf('/examPage/') + '/examPage/'.length);
   const exam = url2.replace('/results', '');
 
-  
-
   const [certificateAdded, setCertificateAdded] = useState(false);
 
   useEffect(() => {
@@ -48,9 +46,7 @@ function ExamResults() {
               </h1>
             </div>
           ) : (
-            <div>
-              {/* <h1>You have been disqualified due to exceeding warning amount.</h1> */}
-            </div>
+            <div>{<h1>Your Score is 0%</h1>}</div>
           )}{' '}
           {certificateAdded ? (
             <div>
@@ -66,5 +62,3 @@ function ExamResults() {
 }
 
 export default ExamResults;
-
-
