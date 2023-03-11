@@ -43,23 +43,9 @@ const ExamPage = () => {
         faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL),
         faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL)
-      ]).then(fetchImage).then(setFace).then(setModelsLoaded(true));
+      ]).then(fetchImage).then(setFace);
     };
-    const fetchImage = async () => { 
-      const res = await fetch(imageUrl);
-      const imageBlob = await res.blob();
-      const imageObjectURL = URL.createObjectURL(imageBlob);
-      setImg(imageObjectURL);
-    };
-    const setFace = async() => {
-      const results = await faceapi.detectAllFaces(document.getElementById("FaceImg")).withFaceLandmarks()
-          .withFaceDescriptors()
-      console.log(results);
-      if(!results.length) {
-        return;
-      }
-      setFaceMatcher(new faceapi.FaceMatcher(results));
-    };
+    
     loadModels();
     /* const fetchCourses = async () => {
       const response = await fetch('/api/courses/');
@@ -70,14 +56,22 @@ const ExamPage = () => {
 */
   }, []);
 
-  // async function setFace() {
-  //   const results = await faceapi.detectAllFaces(img).withFaceLandmarks()
-  //       .withFaceDescriptors()
-  //   if(!results.length) {
-  //           return;
-  //   }
-  //   const faceMatcher = new faceapi.FaceMatcher(results);
-  // }
+  const fetchImage = async () => { 
+    const res = await fetch(imageUrl);
+    const imageBlob = await res.blob();
+    const imageObjectURL = URL.createObjectURL(imageBlob);
+    setImg(imageObjectURL);
+  };
+  const setFace = async() => {
+    const results = await faceapi.detectAllFaces(document.getElementById("FaceImg")).withFaceLandmarks()
+        .withFaceDescriptors()
+    console.log(results);
+    if(!results.length) {
+      return;
+    }
+    setFaceMatcher(new faceapi.FaceMatcher(results))
+    setModelsLoaded(true);
+  };
 
   const startVideo = () => {
     const loadExam = (examName) => {
@@ -311,11 +305,12 @@ const ExamPage = () => {
                       />
                     </div>
                   </div>
-                ) : (
+                ) : 
                   <div>loading...</div>
-                )
+                      
               ) : (
-                <></>
+                <>
+                </>
               )}
             </div>
           </div>
