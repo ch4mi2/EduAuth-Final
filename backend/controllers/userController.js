@@ -19,7 +19,9 @@ const loginUser = async (req, res) => {
     const userID = user._id;
     
 
-    res.status(200).json({email, token,faceUrl, userID})
+    const faceImageUrl = user.faceImageUrl;
+
+    res.status(200).json({email, token,faceUrl, userID, faceImageUrl})
   } catch (error) {
     res.status(400).json({error: error.message})
   }
