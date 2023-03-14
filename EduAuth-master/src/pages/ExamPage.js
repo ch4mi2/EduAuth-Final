@@ -31,8 +31,8 @@ const ExamPage = () => {
   const videoHeight = 480 / 2;
   const videoWidth = 640 / 2;
   const canvasRef = useRef();
-  const imageUrl = "https://firebasestorage.googleapis.com/v0/b/eduauth-72983.appspot.com/o/face%2F1678524353548_undefined?alt=media&token=dcc7ea20-3a41-4e12-829a-065a29502edb";
-
+  //const imageUrl = "https://firebasestorage.googleapis.com/v0/b/eduauth-72983.appspot.com/o/face%2F1678524353548_undefined?alt=media&token=dcc7ea20-3a41-4e12-829a-065a29502edb";
+  
   useEffect(() => {
     const loadModels = async () => {
       const MODEL_URL = process.env.PUBLIC_URL + '/models';     
